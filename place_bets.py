@@ -42,7 +42,7 @@ def place_bet(driver, team_names, correct_score):
     # search box can accept inputs for both teams ex. aston villa leicester city keys.Enter
     search_bar.send_keys(team_names)
     search_bar.send_keys(Keys.ENTER)
-    time.sleep(5)
+    time.sleep(4)
     try:
         global initial_run_completed
         if not initial_run_completed:
@@ -54,7 +54,7 @@ def place_bet(driver, team_names, correct_score):
             bet_link.click()
         except:
             driver.execute_script("arguments[0].click();", bet_link)
-        time.sleep(8)
+        time.sleep(7)
         # locate the Correct Score betting page (it's simpler than scrolling down the page)
         # TODO write code to accept input from file
         correct_score_box = driver.find_element_by_xpath("//*[text()='Correct score']")
@@ -76,10 +76,13 @@ def place_bet(driver, team_names, correct_score):
         # click the Place Bet button
         submit_btn = driver.find_element_by_css_selector("button[class='place betslip-place-button']")
         submit_btn.click()
-    except:
+    except Exception:
+        print(Exception)
         print('no results found')
+        driver.get('https://sports.partypoker.com/en/sports')
+        time.sleep(4)
     finally:
-        print('bet successfully placed')
+        print('bet successfully processed')
 
 
 with open('predictions.csv', 'r') as f:

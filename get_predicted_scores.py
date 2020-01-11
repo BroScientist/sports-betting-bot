@@ -10,23 +10,17 @@ driver.get('https://www.whoscored.com/Previews')
 page = driver.page_source
 soup = BeautifulSoup(page, 'html.parser')
 previews_date = soup.find('td', {'class': 'previews-date'}).text.strip()
-import datetime
 tmr_date = str(datetime.date.today() + datetime.timedelta(days=1))
 
-previews = soup.find('div', {'class': 'region previews'})
-# previews = previews.find_all('tr', {'class': 'alt'})
-match_links = previews.find_all('a', href=True)
-# i is the number of links we want to reach down -1 
-for i in range(9):
-    if 'Tournaments' not in match_links[i]['href']:
-        links.append('https://www.whoscored.com/' + match_links[i]['href'])
+all_previews = soup.find('div', {'class': 'region previews'})
+for link in all_previews.find_all('a', href=True):
+    if 'Preview' in link['href']:
+        links.append('https://www.whoscored.com/' + link['href'])
 
 
 def get_predictions_for_match(driver, match_url):
     # match_url is whoscored.com preview link
     # this works but it's slow as shit (20+ seconds for one page...) but I don't wanna get banned again
-    # it's slow because we are downloading the entire page... fuck this
-    # driver = webdriver.Chrome('/Users/apple/PycharmProjects/chromedriver')
     driver.get(match_url)
     page = driver.page_source
 
@@ -44,14 +38,18 @@ def get_predictions_for_match(driver, match_url):
 
     with open('predictions.csv', 'a') as f:
         writer = csv.writer(f)
+        team_names = team_names.replace('Manchester United', 'Manchester Utd')
         writer.writerow([team_names, scores])
 
 
-# TODO write code to only find links for tmr's matches (or an arbitray range of days)
 with open('predictions.csv', 'w') as f:
     pass
 
-for link in links:
-    get_predictions_for_match(driver, link)
+num_of_bets = 10
+for link in links[:num_of_bets]:
+    try:
+        get_predictions_for_match(driver, link)
+    except:
+        print('problem with webpage')
 
 driver.quit()
