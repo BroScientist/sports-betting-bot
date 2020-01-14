@@ -7,29 +7,28 @@ import time
 import params
 import csv
 
-driver = webdriver.Chrome('/Users/apple/PycharmProjects/chromedriver')
-url = 'https://sports.partypoker.com/en/sports'
-driver.get(url)
-# page = driver.page_source
-
-
-# login to Partypoker.com
-WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located)
-# login_btn = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "vn-menu-item[linkclass='header-btn btn']")))
-# login_btn.click()
-# time.sleep(0.5)
-driver.find_element_by_css_selector("vn-menu-item[linkclass='header-btn btn']").click()
-user_name_field = driver.find_element_by_css_selector("input[name='username']")
-user_name_field.click()
-user_name_field.send_keys(params.USERNAME)
-password_field = driver.find_element_by_css_selector("input[name='password']")
-password_field.send_keys(params.PASSWORD)
-password_field.send_keys(Keys.ENTER)
-
-
-
 global initial_run_completed
 initial_run_completed = False
+
+
+def login(driver):
+    # login to Partypoker.com
+    url = 'https://sports.partypoker.com/en/sports'
+    driver.get(url)
+    WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located)
+    # login_btn = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "vn-menu-item[linkclass='header-btn btn']")))
+    # login_btn.click()
+    # time.sleep(0.5)
+    driver.find_element_by_css_selector("vn-menu-item[linkclass='header-btn btn']").click()
+    user_name_field = driver.find_element_by_css_selector("input[name='username']")
+    user_name_field.click()
+    user_name_field.send_keys(params.USERNAME)
+    time.sleep(0.5)
+    password_field = driver.find_element_by_css_selector("input[name='password']")
+    password_field.send_keys(params.PASSWORD)
+    password_field.send_keys(Keys.ENTER)
+    time.sleep(5)
+    return driver.find_element_by_css_selector("div[class='user-name']").text == 'Broscientist'
 
 
 def place_bet(driver, team_names, correct_score, stake):
@@ -86,6 +85,10 @@ def place_bet(driver, team_names, correct_score, stake):
         raise Exception
 
 
+driver = webdriver.Chrome('/Users/apple/PycharmProjects/chromedriver')
+while not login(driver):
+    login(driver)
+print('Logged in successfully')
 with open('predictions.csv', 'r') as f:
     reader = csv.reader(f)
     for row in reader:
