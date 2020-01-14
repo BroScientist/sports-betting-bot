@@ -12,14 +12,15 @@ initial_run_completed = False
 
 
 def login(driver):
-    # login to Partypoker.com
+    # TODO add exception handling for failed logins
     url = 'https://sports.partypoker.com/en/sports'
     driver.get(url)
     WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located)
-    # login_btn = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "vn-menu-item[linkclass='header-btn btn']")))
-    # login_btn.click()
-    # time.sleep(0.5)
+
+    # locate and click the Login button
     driver.find_element_by_css_selector("vn-menu-item[linkclass='header-btn btn']").click()
+
+    # locate and sendkeys to the username and passwords fields
     user_name_field = driver.find_element_by_css_selector("input[name='username']")
     user_name_field.click()
     user_name_field.send_keys(params.USERNAME)
@@ -27,11 +28,14 @@ def login(driver):
     password_field = driver.find_element_by_css_selector("input[name='password']")
     password_field.send_keys(params.PASSWORD)
     password_field.send_keys(Keys.ENTER)
+
+    # return True if my username shows up on the page after login
     time.sleep(5)
     return driver.find_element_by_css_selector("div[class='user-name']").text == 'Broscientist'
 
 
 def place_bet(driver, team_names, correct_score, stake):
+
     # locate the sports search button
     WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located)
     try:
@@ -39,12 +43,14 @@ def place_bet(driver, team_names, correct_score, stake):
     except:
         time.sleep(8)
         driver.find_element_by_css_selector("i[class='ui-icon ui-icon-size-lg sports-icon theme-search before-separator ng-star-inserted']").click()
+
     # locate the search bar and send keys
     search_bar = driver.find_element_by_css_selector("input[name='searchField']")
-    # search box can accept inputs for both teams ex. aston villa leicester city keys.Enter
     search_bar.send_keys(team_names)
     search_bar.send_keys(Keys.ENTER)
     time.sleep(4)
+
+    # locate the betting link in search results
     try:
         global initial_run_completed
         if not initial_run_completed:
@@ -58,17 +64,20 @@ def place_bet(driver, team_names, correct_score, stake):
             driver.execute_script("arguments[0].click();", bet_link)
         # WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located) this doesn't work for some reason
         time.sleep(5)
+
         # locate the Correct Score betting page (it's simpler than scrolling down the page to find the Correct Score section)
         correct_score_box = driver.find_element_by_xpath("//*[text()='Correct score']")
         correct_score_box.click()
         score_box = driver.find_element_by_xpath(f".//div[text() = '{correct_score}']")
         score_box.click()
+
         # maximize the window because the bet box won't show up otherwise
         driver.maximize_window()
 
         # locate the input field, delete the default value of 5.00 and input the preset stake $$$ from params.py
         stake_input = driver.find_element_by_css_selector("input[tabindex='-1']")
-        # stake_input.clear()
+
+        # stake_input.clear() doesn't work well with this site so we are using a for loop
         for _ in range(4):
             stake_input.send_keys(Keys.BACKSPACE)
 
@@ -78,6 +87,7 @@ def place_bet(driver, team_names, correct_score, stake):
         submit_btn = driver.find_element_by_css_selector("button[class='place betslip-place-button']")
         submit_btn.click()
         print(f'Bet: {team_names} {correct_score} (${stake}) has been placed')
+
     except Exception:
         print(f'Problem finding bets for: {team_names}')
         driver.get('https://sports.partypoker.com/en/sports')
@@ -86,9 +96,13 @@ def place_bet(driver, team_names, correct_score, stake):
 
 
 driver = webdriver.Chrome('/Users/apple/PycharmProjects/chromedriver')
+
+# continue to login until success (I know it's dumb as shit but this ain't the final product)
 while not login(driver):
     login(driver)
 print('Logged in successfully')
+
+# place bet for every row in the predictions.csv file
 with open('predictions.csv', 'r') as f:
     reader = csv.reader(f)
     for row in reader:
