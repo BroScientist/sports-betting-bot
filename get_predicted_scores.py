@@ -27,6 +27,7 @@ def replace_team_names(team_names):
     team_names = team_names.replace('SPAL 2013', 'Spal')
     team_names = team_names.replace('Manchester United', 'Manchester Utd')
     team_names = team_names.replace('Parma Calcio 1913', 'Parma FC')
+    team_names = team_names.replace('FC Koeln', 'FC Köln')
     return team_names
 
 
@@ -63,7 +64,7 @@ with open('predictions.csv', 'w') as f:
 
 # TODO add function so that the program only processes matches happening in the next day
 # set the maximum number of bets
-num_of_bets = 10
+num_of_bets = 22
 for link in links[:num_of_bets]:
     try:
         get_predictions_for_match(driver, link)

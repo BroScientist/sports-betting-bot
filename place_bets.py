@@ -12,12 +12,13 @@ initial_run_completed = False
 
 
 def login(driver):
-    # TODO add exception handling for failed logins
+
     url = 'https://sports.partypoker.com/en/sports'
     driver.get(url)
-    WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located)
-
+    # WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located)
+    time.sleep(8)
     # locate and click the Login button
+    # driver.find_element_by_css_selector("vn-menu-item[linkclass='header-btn btn']").click()
     driver.find_element_by_css_selector("vn-menu-item[linkclass='header-btn btn']").click()
 
     # locate and sendkeys to the username and passwords fields
@@ -31,7 +32,7 @@ def login(driver):
 
     # return True if my username shows up on the page after login
     time.sleep(5)
-    return driver.find_element_by_css_selector("div[class='user-name']").text == 'Broscientist'
+    return driver.find_element_by_css_selector("div[class='user-name']").text == params.USER_ID
 
 
 def place_bet(driver, team_names, correct_score, stake):
@@ -48,22 +49,24 @@ def place_bet(driver, team_names, correct_score, stake):
     search_bar = driver.find_element_by_css_selector("input[name='searchField']")
     search_bar.send_keys(team_names)
     search_bar.send_keys(Keys.ENTER)
-    time.sleep(4)
+    time.sleep(5)
 
     # locate the betting link in search results
     try:
         global initial_run_completed
         if not initial_run_completed:
-            bet_link = driver.find_element_by_css_selector("span[class='bet-builder-icon ng-star-inserted']")
+            # bet_link = driver.find_element_by_css_selector("span[class='bet-builder-icon ng-star-inserted']")
+            bet_link = driver.find_element_by_xpath('//*[@id="betfinder"]/div[3]/ms-grid/ms-event-group/ms-event/div/div/a/div[1]/ms-event-detail')
             initial_run_completed = True
         else:
-            bet_link = driver.find_element_by_css_selector("div[class='participant-container ng-star-inserted']")
+            # bet_link = driver.find_element_by_css_selector("div[class='participant-container ng-star-inserted']")
+            bet_link = driver.find_element_by_xpath('//*[@id="betfinder"]/div[3]/ms-grid/ms-event-group/ms-event/div/div/a/div[1]/ms-event-detail/ms-event-info')
         try:
             bet_link.click()
         except:
             driver.execute_script("arguments[0].click();", bet_link)
         # WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located) this doesn't work for some reason
-        time.sleep(5)
+        time.sleep(8)
 
         # locate the Correct Score betting page (it's simpler than scrolling down the page to find the Correct Score section)
         correct_score_box = driver.find_element_by_xpath("//*[text()='Correct score']")
@@ -91,7 +94,9 @@ def place_bet(driver, team_names, correct_score, stake):
     except Exception:
         print(f'Problem finding bets for: {team_names}')
         driver.get('https://sports.partypoker.com/en/sports')
+        print('Navigating back to partypoker.com/en/sports')
         time.sleep(5)
+        initial_run_completed = True
         raise Exception
 
 
@@ -112,4 +117,4 @@ with open('predictions.csv', 'r') as f:
             place_bet(driver, team_names, predicted_score, params.STAKE)
         except Exception:
             continue
-    driver.quit()
+driver.quit()
