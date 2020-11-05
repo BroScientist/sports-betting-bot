@@ -15,6 +15,7 @@ def login(driver):
 
     url = 'https://sports.partypoker.com/en/sports'
     driver.get(url)
+    driver.maximize_window()
     # WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located)
     time.sleep(8)
     # locate and click the Login button
@@ -39,6 +40,7 @@ def place_bet(driver, team_names, correct_score, stake):
 
     # locate the sports search button
     WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located)
+    # time.sleep(8)
     try:
         driver.find_element_by_css_selector("i[class='ui-icon ui-icon-size-lg sports-icon theme-search before-separator ng-star-inserted']").click()
     except:
@@ -92,17 +94,13 @@ def place_bet(driver, team_names, correct_score, stake):
         print(f'Bet: {team_names} {correct_score} (${stake}) has been placed')
 
     except Exception:
-        print(f'Problem finding bets for: {team_names}')
-        driver.get('https://sports.partypoker.com/en/sports')
-        print('Navigating back to partypoker.com/en/sports')
-        time.sleep(5)
-        initial_run_completed = True
         raise Exception
 
 
 driver = webdriver.Chrome('/Users/apple/PycharmProjects/chromedriver')
 
-# continue to login until success (I know it's dumb as shit but this ain't the final product)
+# TODO: update this
+# continue to login until success
 while not login(driver):
     login(driver)
 print('Logged in successfully')
@@ -116,5 +114,13 @@ with open('predictions.csv', 'r') as f:
         try:
             place_bet(driver, team_names, predicted_score, params.STAKE)
         except Exception:
+            # this exception doesn't work for absolutely no reason
+            print(f'Problem finding bets for: {team_names}')
+            driver.get('https://sports.partypoker.com/en/sports')
+            print('Navigating back to partypoker.com/en/sports')
+            time.sleep(5)
+            initial_run_completed = True
             continue
+            
+print('Process completed')
 driver.quit()
